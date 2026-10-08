@@ -115,19 +115,19 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
 
   const handleAttachCode = () => {
     setShowAttachMenu(false);
-    const codeSample = `// TELESHΞN™ Edge Bridge\nexport async function handleRequest() {\n  return new Response("OK", { status: 200 });\n}`;
-    onSendMessage('Edge deployment module', 'code', {
+    const codeSample = `// Script snippet\nfunction main() {\n  console.log("TELESHΞN™ Ready");\n}`;
+    onSendMessage('Snippet', 'code', {
       mediaUrl: codeSample,
-      mediaName: 'edge-bridge.ts',
+      mediaName: 'snippet.ts',
       codeLang: 'typescript',
     });
   };
 
   const handleAttachDocument = () => {
     setShowAttachMenu(false);
-    onSendMessage('TELESHΞN™ Architecture Whitepaper v3.8', 'document', {
-      mediaName: 'TELESHEN_Spec_v3.pdf',
-      mediaSize: '4.8 MB',
+    onSendMessage('Document', 'document', {
+      mediaName: 'Document.pdf',
+      mediaSize: '1.2 MB',
     });
   };
 
@@ -138,14 +138,13 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
         <div className="absolute bottom-full mb-2 left-4 bg-slate-900/95 backdrop-blur-md border border-slate-800 rounded-xl shadow-2xl p-2 w-72 z-30">
           <div className="text-[11px] font-semibold text-slate-400 px-2 py-1 flex items-center gap-1.5 border-b border-slate-800">
             <Bot className="w-3.5 h-3.5 text-sky-400" />
-            <span>Bot Commands</span>
+            <span>Assistant Commands</span>
           </div>
           <div className="mt-1 space-y-0.5">
             {[
-              { cmd: '/status', desc: 'Inspect edge core health' },
-              { cmd: '/deploy', desc: 'Check GitHub & Cloudflare repo' },
-              { cmd: '/theme', desc: 'View theme presets' },
-              { cmd: '/help', desc: 'Show all bot actions' },
+              { cmd: '/start', desc: 'شروع گفتگو با دستیار' },
+              { cmd: '/help', desc: 'راهنما و دستورات' },
+              { cmd: '/support', desc: 'پشتیبانی مستقیم (@shervini)' },
             ].map(item => (
               <button
                 key={item.cmd}

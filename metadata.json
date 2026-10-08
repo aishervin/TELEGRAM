@@ -1,6 +1,6 @@
 {
   "name": "TELESHΞN™",
-  "description": "Refactored, ultra-fast Telegram Web React client (TELESHΞN™) inspired by telegram-react with modern reactive architecture, cloud sync, voice notes, rich media, and custom themes.",
+  "description": "TELESHΞN™ Web Client",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

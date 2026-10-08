@@ -38,8 +38,8 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
     if (chat.typingUser) return `${chat.typingUser} is typing...`;
     if (chat.type === 'channel') return `${(chat.memberCount || 1200).toLocaleString()} subscribers`;
     if (chat.type === 'group') return `${chat.memberCount || 3} members`;
-    if (chat.type === 'bot') return 'bot · Edge automation';
-    if (chat.type === 'saved') return 'your cloud storage space';
+    if (chat.type === 'bot') return 'bot';
+    if (chat.type === 'saved') return 'cloud storage';
     return chat.isOnline ? 'online' : (chat.lastSeen || 'last seen recently');
   };
 

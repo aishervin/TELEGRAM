@@ -3,13 +3,9 @@ import {
   X, 
   User, 
   Palette, 
-  Bell, 
-  Shield, 
-  Database, 
   Check, 
-  Sparkles,
-  Cloud,
-  Save
+  Save,
+  Bell
 } from 'lucide-react';
 import { CurrentUser, ThemeType } from '../../types/telegram';
 
@@ -22,12 +18,12 @@ interface SettingsModalProps {
   onSetTheme: (theme: ThemeType) => void;
 }
 
-const THEMES: { id: ThemeType; name: string; bg: string; accent: string }[] = [
-  { id: 'default', name: 'Telegram Dark', bg: '#0e1621', accent: '#2aabee' },
-  { id: 'midnight', name: 'Midnight OLED', bg: '#000000', accent: '#38bdf8' },
-  { id: 'emerald', name: 'Emerald Green', bg: '#061412', accent: '#10b981' },
-  { id: 'cyber', name: 'Cyber Violet', bg: '#0d091a', accent: '#a855f7' },
-  { id: 'light', name: 'Clean Light', bg: '#f0f2f5', accent: '#2481cc' },
+const THEMES: { id: ThemeType; name: string; accent: string }[] = [
+  { id: 'default', name: 'Telegram Dark', accent: '#2aabee' },
+  { id: 'midnight', name: 'Midnight OLED', accent: '#38bdf8' },
+  { id: 'emerald', name: 'Emerald Green', accent: '#10b981' },
+  { id: 'cyber', name: 'Cyber Violet', accent: '#a855f7' },
+  { id: 'light', name: 'Clean Light', accent: '#2481cc' },
 ];
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -38,10 +34,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onUpdateProfile,
   onSetTheme,
 }) => {
-  const [activeTab, setActiveTab] = useState<'profile' | 'appearance' | 'cloud'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'appearance' | 'notifications'>('profile');
   const [name, setName] = useState(currentUser.name);
   const [handle, setHandle] = useState(currentUser.handle);
   const [bio, setBio] = useState(currentUser.bio);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [soundEnabled, setSoundEnabled] = useState(true);
   const [isSaved, setIsSaved] = useState(false);
 
   if (!isOpen) return null;
@@ -94,19 +92,19 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             }`}
           >
             <Palette className="w-4 h-4" />
-            <span>Theme & Colors</span>
+            <span>Appearance</span>
           </button>
 
           <button
-            onClick={() => setActiveTab('cloud')}
+            onClick={() => setActiveTab('notifications')}
             className={`py-3 px-3 border-b-2 flex items-center gap-2 transition-colors ${
-              activeTab === 'cloud'
+              activeTab === 'notifications'
                 ? 'border-sky-400 text-sky-400'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
-            <Cloud className="w-4 h-4" />
-            <span>Cloud Sync</span>
+            <Bell className="w-4 h-4" />
+            <span>Notifications</span>
           </button>
         </div>
 
@@ -138,7 +136,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-slate-400 mb-1 font-medium">Username Handle</label>
+                <label className="block text-slate-400 mb-1 font-medium">Username</label>
                 <input
                   type="text"
                   value={handle}
@@ -159,14 +157,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
               <div className="pt-2 flex items-center justify-between">
                 <span className="text-emerald-400 text-xs font-medium">
-                  {isSaved && '✓ Profile updated successfully!'}
+                  {isSaved && 'Changes saved'}
                 </span>
                 <button
                   type="submit"
                   className="px-4 py-2 bg-sky-500 hover:bg-sky-400 text-white font-medium rounded-xl flex items-center gap-2 transition-colors"
                 >
                   <Save className="w-4 h-4" />
-                  <span>Save Changes</span>
+                  <span>Save</span>
                 </button>
               </div>
             </form>
@@ -175,10 +173,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           {activeTab === 'appearance' && (
             <div className="space-y-4">
               <div>
-                <h4 className="font-semibold text-sm text-white mb-1">Color Theme</h4>
-                <p className="text-slate-400 text-xs mb-3">
-                  Select a theme for TELESHΞN™ Web Client.
-                </p>
+                <h4 className="font-semibold text-sm text-white mb-2">Theme</h4>
                 <div className="grid grid-cols-2 gap-2.5">
                   {THEMES.map((t) => {
                     const isSelected = currentTheme === t.id;
@@ -210,31 +205,32 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </div>
           )}
 
-          {activeTab === 'cloud' && (
+          {activeTab === 'notifications' && (
             <div className="space-y-4">
-              <div className="p-4 bg-slate-800/60 rounded-2xl border border-slate-700/60">
-                <div className="flex items-center gap-2 text-sky-400 font-semibold mb-1">
-                  <Cloud className="w-4 h-4" />
-                  <span>Cloudflare & GitHub Synchronization</span>
+              <div className="flex items-center justify-between p-3 bg-slate-800/50 rounded-2xl border border-slate-800">
+                <div>
+                  <div className="font-medium text-white">Direct Message Notifications</div>
+                  <div className="text-slate-400 text-[11px]">Play sound and alert for incoming messages</div>
                 </div>
-                <p className="text-slate-300 text-xs leading-relaxed">
-                  TELESHΞN™ is connected to your primary GitHub repo <code>aishervin/teleshen</code> and Cloudflare Workers runtime. Local state is cached in persistent browser memory and synchronizes with edge nodes.
-                </p>
+                <input
+                  type="checkbox"
+                  checked={notificationsEnabled}
+                  onChange={(e) => setNotificationsEnabled(e.target.checked)}
+                  className="w-4 h-4 accent-sky-500 rounded"
+                />
               </div>
 
-              <div className="space-y-2 text-xs">
-                <div className="flex justify-between py-2 border-b border-slate-800">
-                  <span className="text-slate-400">Target Repository:</span>
-                  <span className="font-mono text-sky-300">github.com/aishervin/teleshen</span>
+              <div className="flex items-center justify-between p-3 bg-slate-800/50 rounded-2xl border border-slate-800">
+                <div>
+                  <div className="font-medium text-white">In-App Sound Effects</div>
+                  <div className="text-slate-400 text-[11px]">Audio chime when messages are sent or received</div>
                 </div>
-                <div className="flex justify-between py-2 border-b border-slate-800">
-                  <span className="text-slate-400">Cloudflare Account:</span>
-                  <span className="font-mono text-slate-300">95db3c31158d3696452081a727e1104a</span>
-                </div>
-                <div className="flex justify-between py-2 border-b border-slate-800">
-                  <span className="text-slate-400">Edge Gateway Status:</span>
-                  <span className="font-mono text-emerald-400">Connected (12ms)</span>
-                </div>
+                <input
+                  type="checkbox"
+                  checked={soundEnabled}
+                  onChange={(e) => setSoundEnabled(e.target.checked)}
+                  className="w-4 h-4 accent-sky-500 rounded"
+                />
               </div>
             </div>
           )}

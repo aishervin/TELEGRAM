@@ -8,17 +8,16 @@ import {
   CheckCheck, 
   Check, 
   Mic, 
-  FileCode, 
   Plus, 
-  Radio, 
   Bot, 
-  Users, 
-  Bookmark,
-  X
+  X,
+  Loader2
 } from 'lucide-react';
 import { Chat, FolderCategory, Message } from '../../types/telegram';
+import { ConnectionState } from '../../services/telegramStore';
 
 interface LeftSidebarProps {
+  connectionState: ConnectionState;
   chats: Chat[];
   activeChatId: string;
   activeFolder: FolderCategory;
@@ -33,14 +32,12 @@ interface LeftSidebarProps {
 
 const FOLDERS: { id: FolderCategory; label: string }[] = [
   { id: 'all', label: 'All' },
-  { id: 'channels', label: 'Channels' },
-  { id: 'groups', label: 'Groups' },
+  { id: 'personal', label: 'Direct' },
   { id: 'bots', label: 'Bots' },
-  { id: 'personal', label: 'Personal' },
-  { id: 'work', label: 'Work' },
 ];
 
 export const LeftSidebar: React.FC<LeftSidebarProps> = ({
+  connectionState,
   chats,
   activeChatId,
   activeFolder,
@@ -77,24 +74,47 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
 
   return (
     <div className="w-full md:w-80 lg:w-96 bg-slate-900 border-r border-slate-800 flex flex-col h-full shrink-0 select-none">
-      {/* Top Header: Menu & Search */}
-      <div className="p-2.5 pb-1 flex items-center gap-2 border-b border-slate-800/80">
-        <button
-          onClick={onOpenDrawer}
-          className="w-10 h-10 rounded-full hover:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white transition-colors shrink-0"
-          aria-label="Open menu"
-        >
-          <Menu className="w-5 h-5" />
-        </button>
+      {/* Top Header: Brand label with Connecting / Updating state transition */}
+      <div className="px-3 pt-3 pb-2 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onOpenDrawer}
+            className="w-9 h-9 rounded-full hover:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white transition-colors"
+            aria-label="Open menu"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
 
-        {/* Search Bar */}
-        <div className="flex-1 relative bg-slate-800/80 rounded-2xl flex items-center px-3 py-1.5 focus-within:ring-1 focus-within:ring-sky-500 transition-all border border-slate-700/50">
+          {/* Authentic Telegram connection / brand title */}
+          <div className="flex items-center gap-2">
+            {connectionState === 'connecting' ? (
+              <div className="flex items-center gap-2 text-xs text-sky-400 font-medium">
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <span>Connecting...</span>
+              </div>
+            ) : connectionState === 'updating' ? (
+              <div className="flex items-center gap-2 text-xs text-sky-400 font-medium">
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <span>Updating...</span>
+              </div>
+            ) : (
+              <span className="font-bold text-base text-slate-100 tracking-tight select-none">
+                TELESHΞN™
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Search Input Bar */}
+      <div className="px-3 pb-2">
+        <div className="relative bg-slate-800/80 rounded-xl flex items-center px-3 py-1.5 focus-within:ring-1 focus-within:ring-sky-500 transition-all border border-slate-700/50">
           <Search className="w-4 h-4 text-slate-400 shrink-0" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search chats, channels..."
+            placeholder="Search"
             className="w-full bg-transparent border-none text-xs sm:text-sm text-slate-100 placeholder:text-slate-500 pl-2 outline-none"
           />
           {searchQuery && (
@@ -108,21 +128,21 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
         </div>
       </div>
 
-      {/* Folder Tabs (Zero-pill compliant tabs) */}
-      <div className="flex items-center gap-1 px-2 py-1.5 border-b border-slate-800 overflow-x-auto scrollbar-none text-xs">
+      {/* Folder Tabs */}
+      <div className="flex items-center gap-1 px-3 py-1 border-b border-slate-800/80 text-xs">
         {FOLDERS.map((folder) => {
           const isActive = activeFolder === folder.id;
           return (
             <button
               key={folder.id}
               onClick={() => onSelectFolder(folder.id)}
-              className={`px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-colors ${
                 isActive
                   ? 'bg-slate-800 text-sky-400 font-semibold'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
               }`}
             >
-              <span>{folder.label}</span>
+              {folder.label}
             </button>
           );
         })}
@@ -185,7 +205,6 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
                 {/* Snippet & Badges Row */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1 text-xs text-slate-400 truncate flex-1 pr-2">
-                    {/* Message outgoing tick */}
                     {lastMsg?.isOutgoing && (
                       <span className="shrink-0">
                         {lastMsg.status === 'read' ? (
@@ -196,7 +215,6 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
                       </span>
                     )}
 
-                    {/* Media icons */}
                     {lastMsg?.type === 'voice' && (
                       <span className="flex items-center gap-1 text-sky-400">
                         <Mic className="w-3 h-3 shrink-0" />
@@ -204,21 +222,13 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
                       </span>
                     )}
 
-                    {lastMsg?.type === 'code' && (
-                      <span className="flex items-center gap-1 text-emerald-400">
-                        <FileCode className="w-3 h-3 shrink-0" />
-                        <span className="text-[11px]">Code</span>
-                      </span>
-                    )}
-
-                    {lastMsg?.type !== 'voice' && lastMsg?.type !== 'code' && (
+                    {lastMsg?.type !== 'voice' && (
                       <span className="truncate">
-                        {lastMsg ? lastMsg.content : 'No messages yet'}
+                        {lastMsg ? lastMsg.content : 'No messages'}
                       </span>
                     )}
                   </div>
 
-                  {/* Pinned & Unread Indicators */}
                   <div className="flex items-center gap-1.5 shrink-0">
                     {chat.isPinned && (
                       <Pin className="w-3 h-3 text-slate-500" />
@@ -242,17 +252,12 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
         )}
       </div>
 
-      {/* Floating Action Button (New Chat) */}
-      <div className="p-3 border-t border-slate-800 flex items-center justify-between bg-slate-900/90 text-xs">
-        <div className="flex items-center gap-2 text-slate-400">
-          <Radio className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
-          <span className="font-mono text-[11px]">TELESHΞN™ Edge v3.8</span>
-        </div>
-
+      {/* Floating Action Button */}
+      <div className="p-3 border-t border-slate-800 flex justify-end bg-slate-900/90">
         <button
           onClick={onOpenNewChat}
-          className="w-10 h-10 rounded-full bg-sky-500 hover:bg-sky-400 text-white flex items-center justify-center shadow-lg active:scale-95 transition-all"
-          title="New Chat or Group"
+          className="w-11 h-11 rounded-full bg-sky-500 hover:bg-sky-400 text-white flex items-center justify-center shadow-lg active:scale-95 transition-all"
+          title="New Chat"
         >
           <Plus className="w-5 h-5" />
         </button>

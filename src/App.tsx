@@ -11,11 +11,15 @@ import { ChatInfoDrawer } from './components/Modals/ChatInfoDrawer';
 import { CallOverlay } from './components/Modals/CallOverlay';
 import { StickerPickerModal } from './components/Modals/StickerPickerModal';
 import { NewChatModal } from './components/Modals/NewChatModal';
+import { AuthModal } from './components/Modals/AuthModal';
+import { UserDirectoryModal } from './components/Modals/UserDirectoryModal';
 import { Search, X } from 'lucide-react';
 
 export default function App() {
   const {
+    connectionState,
     currentUser,
+    registeredUsers,
     chats,
     activeChat,
     activeChatId,
@@ -23,6 +27,8 @@ export default function App() {
     activeFolder,
     searchQuery,
     theme,
+    isAuthModalOpen,
+    isUserDirectoryOpen,
     isDrawerOpen,
     isSettingsOpen,
     isChatInfoOpen,
@@ -33,6 +39,8 @@ export default function App() {
     setSearchQuery,
     setActiveFolder,
     setTheme,
+    setIsAuthModalOpen,
+    setIsUserDirectoryOpen,
     setIsDrawerOpen,
     setIsSettingsOpen,
     setIsChatInfoOpen,
@@ -40,6 +48,9 @@ export default function App() {
     setIsNewChatModalOpen,
     setReplyMessage,
     selectChat,
+    login,
+    startDirectChat,
+    createGroupChat,
     sendMessage,
     sendVoiceNote,
     sendSticker,
@@ -51,7 +62,6 @@ export default function App() {
     startCall,
     endCall,
     updateProfile,
-    createChat,
   } = useTelegramStore();
 
   const [isMobileChatOpen, setIsMobileChatOpen] = useState(false);
@@ -75,6 +85,7 @@ export default function App() {
       {/* 1. Left Sidebar: visible on desktop, or mobile when chat is closed */}
       <div className={`h-full ${isMobileChatOpen ? 'hidden md:flex' : 'flex w-full md:w-auto'}`}>
         <LeftSidebar
+          connectionState={connectionState}
           chats={chats}
           activeChatId={activeChatId}
           activeFolder={activeFolder}
@@ -106,14 +117,14 @@ export default function App() {
 
             {/* In-Chat Search Bar */}
             {inChatSearchOpen && (
-              <div className="bg-slate-900/95 border-b border-slate-800 px-4 py-2 flex items-center gap-2 z-15 shadow-sm animate-in slide-in-from-top duration-150">
+              <div className="bg-slate-900/95 border-b border-slate-800 px-4 py-2 flex items-center gap-2 z-15 shadow-xs animate-in slide-in-from-top duration-150">
                 <Search className="w-4 h-4 text-sky-400 shrink-0" />
                 <input
                   type="text"
                   autoFocus
                   value={inChatSearchQuery}
                   onChange={(e) => setInChatSearchQuery(e.target.value)}
-                  placeholder={`Search messages in ${activeChat.title}...`}
+                  placeholder={`Search in ${activeChat.title}...`}
                   className="flex-1 bg-transparent text-xs text-white placeholder:text-slate-500 outline-none"
                 />
                 {inChatSearchQuery && (
@@ -175,11 +186,7 @@ export default function App() {
           </>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-slate-400 text-sm select-none">
-            <div className="w-20 h-20 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-sky-400 mb-3 text-2xl font-bold">
-              ☬
-            </div>
-            <p className="font-semibold text-slate-200">Select a chat to start messaging</p>
-            <p className="text-xs text-slate-500 mt-1">TELESHΞN™ Next-Gen Telegram Web Client</p>
+            <p className="font-semibold text-slate-300">Select a chat to start messaging</p>
           </div>
         )}
       </div>
@@ -191,8 +198,14 @@ export default function App() {
         theme={theme}
         onClose={() => setIsDrawerOpen(false)}
         onOpenSettings={() => setIsSettingsOpen(true)}
+        onOpenUserDirectory={() => setIsUserDirectoryOpen(true)}
+        onOpenAuthModal={() => setIsAuthModalOpen(true)}
         onSelectSavedMessages={() => {
           selectChat('saved-messages');
+          setIsMobileChatOpen(true);
+        }}
+        onSelectSupport={() => {
+          startDirectChat('shervini');
           setIsMobileChatOpen(true);
         }}
         onToggleTheme={handleToggleTheme}
@@ -232,8 +245,33 @@ export default function App() {
       {/* 7. New Chat / Group / Channel Modal */}
       <NewChatModal
         isOpen={isNewChatModalOpen}
+        availableUsers={registeredUsers}
+        currentUserId={currentUser.id}
         onClose={() => setIsNewChatModalOpen(false)}
-        onCreateChat={createChat}
+        onCreateChat={(title, type, memberIds, bio) => {
+          createGroupChat(title, type, memberIds, bio);
+          setIsMobileChatOpen(true);
+        }}
+      />
+
+      {/* 8. Active Users Directory Modal */}
+      <UserDirectoryModal
+        isOpen={isUserDirectoryOpen}
+        users={registeredUsers}
+        currentUserId={currentUser.id}
+        onClose={() => setIsUserDirectoryOpen(false)}
+        onStartDirectChat={(targetUsername) => {
+          startDirectChat(targetUsername);
+          setIsMobileChatOpen(true);
+        }}
+      />
+
+      {/* 9. Auth & Switch Account Modal */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        currentUser={currentUser}
+        onClose={() => setIsAuthModalOpen(false)}
+        onLogin={login}
       />
     </div>
   );
